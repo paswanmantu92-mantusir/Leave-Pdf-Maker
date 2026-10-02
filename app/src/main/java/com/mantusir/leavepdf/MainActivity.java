@@ -1,0 +1,493 @@
+package com.mantusir.leavepdf;
+
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.webkit.CookieManager;
+import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import java.io.OutputStream;
+import java.util.Base64;
+
+public class MainActivity extends Activity {
+
+    private static final int FILE_CHOOSER_REQUEST = 1001;
+
+    private WebView webView;
+    private ValueCallback<Uri[]> filePathCallback;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        webView = new WebView(this);
+
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setMixedContentMode(
+                WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        );
+
+        /*
+         * CHOOSE FILE
+         */
+        webView.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public boolean onShowFileChooser(
+                    WebView view,
+                    ValueCallback<Uri[]> callback,
+                    FileChooserParams params) {
+
+                if (filePathCallback != null) {
+                    filePathCallback.onReceiveValue(null);
+                }
+
+                filePathCallback = callback;
+
+                try {
+                    Intent intent = params.createIntent();
+
+                    startActivityForResult(
+                            intent,
+                            FILE_CHOOSER_REQUEST
+                    );
+
+                    return true;
+
+                } catch (Exception e) {
+                    filePathCallback = null;
+                    return false;
+                }
+            }
+        });
+
+        /*
+         * NORMAL WEB DOWNLOADS
+         */
+        webView.setDownloadListener(new DownloadListener() {
+
+            @Override
+            public void onDownloadStart(
+                    String url,
+                    String userAgent,
+                    String contentDisposition,
+                    String mimeType,
+                    long contentLength) {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        "डाउनलोड किया गया",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                /*
+                 * Normal URL downloads can still be handled
+                 * by Android DownloadManager.
+                 */
+                try {
+
+                    android.app.DownloadManager.Request request =
+                            new android.app.DownloadManager.Request(
+                                    Uri.parse(url)
+                            );
+
+                    String cookies =
+                            CookieManager.getInstance()
+                                    .getCookie(url);
+
+                    if (cookies != null) {
+                        request.addRequestHeader(
+                                "Cookie",
+                                cookies
+                        );
+                    }
+
+                    request.addRequestHeader(
+                            "User-Agent",
+                            userAgent
+                    );
+
+                    request.setMimeType(mimeType);
+
+                    String fileName =
+                            android.webkit.URLUtil.guessFileName(
+                                    url,
+                                    contentDisposition,
+                                    mimeType
+                            );
+
+                    request.setTitle(fileName);
+                    request.setDescription("Downloading file");
+
+                    request.setNotificationVisibility(
+                            android.app.DownloadManager
+                                    .Request
+                                    .VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                    );
+
+                    request.setDestinationInExternalPublicDir(
+                            Environment.DIRECTORY_DOWNLOADS,
+                            fileName
+                    );
+
+                    android.app.DownloadManager manager =
+                            (android.app.DownloadManager)
+                                    getSystemService(
+                                            DOWNLOAD_SERVICE
+                                    );
+
+                    if (manager != null) {
+                        manager.enqueue(request);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "डाउनलोड में जाकर देखें",
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            }
+        });
+
+        /*
+         * JAVASCRIPT BRIDGE FOR jsPDF BLOB
+         */
+        webView.addJavascriptInterface(
+                new BlobDownloadInterface(),
+                "AndroidDownload"
+        );
+
+        /*
+         * WEB PAGE
+         */
+        webView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public void onPageFinished(
+                    WebView view,
+                    String url) {
+
+                super.onPageFinished(view, url);
+
+                installBlobDownloadHook(view);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(
+                    WebView view,
+                    String url) {
+
+                if (url != null &&
+                        url.startsWith("blob:")) {
+
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        setContentView(webView);
+
+        webView.loadUrl(
+                "http://projects.mantusir.in/p/passport-size-photo-generator.html?m=1"
+        );
+    }
+
+    /*
+     * Intercept URL.createObjectURL(blob)
+     */
+    private void installBlobDownloadHook(WebView view) {
+
+        String js =
+                "(function() {" +
+
+                "if (window.__androidBlobHookInstalled) return;" +
+                "window.__androidBlobHookInstalled = true;" +
+
+                "const originalCreateObjectURL = " +
+                "URL.createObjectURL.bind(URL);" +
+
+                "URL.createObjectURL = function(blob) {" +
+
+                "    const url = originalCreateObjectURL(blob);" +
+
+                "    try {" +
+
+                "        if (blob && " +
+                "(blob.type === 'application/pdf' || " +
+                "blob.type === 'application/octet-stream')) {" +
+
+                "            const reader = new FileReader();" +
+
+                "            reader.onloadend = function() {" +
+
+                "                try {" +
+
+                "                    const result = reader.result;" +
+
+                "                    const comma = result.indexOf(',');" +
+
+                "                    const base64 = " +
+                "result.substring(comma + 1);" +
+
+                "                    AndroidDownload.saveBlob(" +
+                "base64," +
+                "'document.pdf'," +
+                "'application/pdf'" +
+                ");" +
+
+                "                } catch (e) {" +
+                "                    console.error(e);" +
+                "                }" +
+
+                "            };" +
+
+                "            reader.readAsDataURL(blob);" +
+
+                "        }" +
+
+                "    } catch (e) {" +
+                "        console.error(e);" +
+                "    }" +
+
+                "    return url;" +
+                "};" +
+
+                "})();";
+
+        view.evaluateJavascript(js, null);
+    }
+
+    /*
+     * Receives the PDF Blob from JavaScript.
+     *
+     * Saves it using MediaStore so Android can put it
+     * directly into the public Download folder.
+     */
+    private class BlobDownloadInterface {
+
+        @JavascriptInterface
+        public void saveBlob(
+                String base64Data,
+                String fileName,
+                String mimeType) {
+
+            runOnUiThread(() -> {
+
+                try {
+
+                    byte[] pdfData;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        pdfData =
+                                Base64.getDecoder()
+                                        .decode(base64Data);
+                    } else {
+                        pdfData =
+                                android.util.Base64.decode(
+                                        base64Data,
+                                        android.util.Base64.DEFAULT
+                                );
+                    }
+
+                    ContentResolver resolver =
+                            getContentResolver();
+
+                    ContentValues values =
+                            new ContentValues();
+
+                    values.put(
+                            MediaStore.Downloads.DISPLAY_NAME,
+                            fileName
+                    );
+
+                    values.put(
+                            MediaStore.Downloads.MIME_TYPE,
+                            mimeType
+                    );
+
+                    if (Build.VERSION.SDK_INT >=
+                            Build.VERSION_CODES.Q) {
+
+                        values.put(
+                                MediaStore.Downloads.RELATIVE_PATH,
+                                Environment.DIRECTORY_DOWNLOADS
+                        );
+
+                        values.put(
+                                MediaStore.Downloads.IS_PENDING,
+                                1
+                        );
+                    }
+
+                    Uri collection =
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+
+                    Uri fileUri =
+                            resolver.insert(
+                                    collection,
+                                    values
+                            );
+
+                    if (fileUri == null) {
+                        throw new Exception(
+                                "Could not create Download file"
+                        );
+                    }
+
+                    OutputStream output =
+                            resolver.openOutputStream(
+                                    fileUri
+                            );
+
+                    if (output == null) {
+                        throw new Exception(
+                                "Could not open Download file"
+                        );
+                    }
+
+                    output.write(pdfData);
+                    output.flush();
+                    output.close();
+
+                    if (Build.VERSION.SDK_INT >=
+                            Build.VERSION_CODES.Q) {
+
+                        ContentValues complete =
+                                new ContentValues();
+
+                        complete.put(
+                                MediaStore.Downloads.IS_PENDING,
+                                0
+                        );
+
+                        resolver.update(
+                                fileUri,
+                                complete,
+                                null,
+                                null
+                        );
+                    }
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "PDF saved to Downloads",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "PDF save failed: " +
+                                    e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
+        }
+    }
+
+    /*
+     * FILE CHOOSER RESULT
+     */
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data) {
+
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+        );
+
+        if (requestCode == FILE_CHOOSER_REQUEST) {
+
+            Uri[] results = null;
+
+            if (resultCode == RESULT_OK && data != null) {
+
+                if (data.getClipData() != null) {
+
+                    int count =
+                            data.getClipData()
+                                    .getItemCount();
+
+                    results = new Uri[count];
+
+                    for (int i = 0; i < count; i++) {
+
+                        results[i] =
+                                data.getClipData()
+                                        .getItemAt(i)
+                                        .getUri();
+                    }
+
+                } else if (data.getData() != null) {
+
+                    results = new Uri[]{
+                            data.getData()
+                    };
+                }
+            }
+
+            if (filePathCallback != null) {
+
+                filePathCallback.onReceiveValue(results);
+                filePathCallback = null;
+            }
+        }
+    }
+
+    /*
+     * BACK BUTTON
+     */
+    @Override
+    public void onBackPressed() {
+
+        if (webView != null &&
+                webView.canGoBack()) {
+
+            webView.goBack();
+
+        } else {
+
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (webView != null) {
+            webView.destroy();
+        }
+
+        super.onDestroy();
+    }
+}

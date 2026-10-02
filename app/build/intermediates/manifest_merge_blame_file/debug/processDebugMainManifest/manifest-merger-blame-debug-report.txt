@@ -1,0 +1,50 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.mantusir.leavepdf"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+7-->INJECTED
+8        android:minSdkVersion="23"
+8-->INJECTED
+9        android:targetSdkVersion="35" />
+9-->INJECTED
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:3:5-66
+11-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:3:22-64
+12
+13    <application
+13-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:5:5-22:19
+14        android:debuggable="true"
+15        android:extractNativeLibs="false"
+15-->INJECTED
+16        android:icon="@drawable/lpdf"
+16-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:8:9-38
+17        android:label="Leave Pdf Maker"
+17-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:7:9-40
+18        android:theme="@style/AppTheme"
+18-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:6:9-40
+19        android:usesCleartextTraffic="true" >
+19-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:9:9-44
+20        <activity
+20-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:11:9-20:20
+21            android:name="com.mantusir.leavepdf.MainActivity"
+21-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:12:13-41
+22            android:exported="true" >
+22-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:13:13-36
+23            <intent-filter>
+23-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:15:13-18:29
+24                <action android:name="android.intent.action.MAIN" />
+24-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:16:17-68
+24-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:16:25-66
+25
+26                <category android:name="android.intent.category.LAUNCHER" />
+26-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:17:17-76
+26-->/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/AndroidManifest.xml:17:27-74
+27            </intent-filter>
+28        </activity>
+29    </application>
+30
+31</manifest>

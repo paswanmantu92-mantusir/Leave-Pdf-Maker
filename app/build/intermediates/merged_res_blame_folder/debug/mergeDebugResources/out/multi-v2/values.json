@@ -1,0 +1,28 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.mantusir.leavepdf.app-mergeDebugResources-1:/values/values.xml",
+            "map": [
+                {
+                    "source": "/data/data/com.termux/files/home/leave-pdf-maker/app/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "16",
+                        "endLines": "4",
+                        "endColumns": "12",
+                        "endOffsets": "216"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "255"
+                    }
+                }
+            ]
+        }
+    ]
+}

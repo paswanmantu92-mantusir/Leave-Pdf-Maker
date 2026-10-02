@@ -1,0 +1,2 @@
+com.mantusir.leavepdf:style/AppTheme = 0x7f020000
+com.mantusir.leavepdf:drawable/lpdf = 0x7f010000
