@@ -1,0 +1,8 @@
+com.mantusir.leavepdf.app-pngs-0 /data/data/com.termux/files/home/leave-pdf-maker/app/build/generated/res/pngs/release
+com.mantusir.leavepdf.app-updated_navigation_xml-1 /data/data/com.termux/files/home/leave-pdf-maker/app/build/generated/updated_navigation_xml/release
+com.mantusir.leavepdf.app-packageReleaseResources-2 /data/data/com.termux/files/home/leave-pdf-maker/app/build/intermediates/incremental/release/packageReleaseResources/merged.dir
+com.mantusir.leavepdf.app-packageReleaseResources-3 /data/data/com.termux/files/home/leave-pdf-maker/app/build/intermediates/incremental/release/packageReleaseResources/stripped.dir
+com.mantusir.leavepdf.app-release-4 /data/data/com.termux/files/home/leave-pdf-maker/app/build/intermediates/merged_res/release/mergeReleaseResources
+com.mantusir.leavepdf.app-main-5 /data/data/com.termux/files/home/leave-pdf-maker/app/src/main/res
+com.mantusir.leavepdf.app-release-6 /data/data/com.termux/files/home/leave-pdf-maker/app/src/release/res
+gradleHome-0 /data/data/com.termux/files/home/.gradle

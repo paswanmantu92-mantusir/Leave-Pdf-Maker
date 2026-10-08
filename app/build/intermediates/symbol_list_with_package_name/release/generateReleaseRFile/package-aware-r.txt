@@ -1,0 +1,4 @@
+com.mantusir.leavepdf
+drawable lpdf
+style AppTheme
+xml file_paths

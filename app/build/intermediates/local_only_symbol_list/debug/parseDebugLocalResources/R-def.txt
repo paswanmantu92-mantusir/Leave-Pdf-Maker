@@ -2,3 +2,4 @@ R_DEF: Internal format may change without notice
 local
 drawable lpdf
 style AppTheme
+xml file_paths

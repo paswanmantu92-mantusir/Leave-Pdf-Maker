@@ -1,6 +1,10 @@
 [
     {
-        "merged": "com.mantusir.leavepdf.app-debug-3:/drawable_lpdf.png.flat",
-        "source": "com.mantusir.leavepdf.app-main-5:/drawable/lpdf.png"
+        "merged": "com.mantusir.leavepdf.app-debug-28:/xml_file_paths.xml.flat",
+        "source": "com.mantusir.leavepdf.app-main-30:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.mantusir.leavepdf.app-debug-28:/drawable_lpdf.png.flat",
+        "source": "com.mantusir.leavepdf.app-main-30:/drawable/lpdf.png"
     }
 ]

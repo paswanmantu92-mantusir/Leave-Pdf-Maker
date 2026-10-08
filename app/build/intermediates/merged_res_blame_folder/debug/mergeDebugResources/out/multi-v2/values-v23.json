@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.mantusir.leavepdf.app-mergeDebugResources-26:/values-v23/values-v23.xml",
+            "map": [
+                {
+                    "source": "/data/data/com.termux/files/home/.gradle/caches/9.7.1/transforms/19d7534e9f5ee0e728a13fe2ff897b31/transformed/work-runtime-2.7.0/res/values-v23/values-v23.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,121",
+                        "endColumns": "65,62",
+                        "endOffsets": "116,179"
+                    }
+                }
+            ]
+        }
+    ]
+}
